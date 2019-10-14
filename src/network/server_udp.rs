@@ -2,6 +2,8 @@ use std::net::UdpSocket;
 use std::str;
 use std::thread;
 
+use log::{debug, error};
+
 const BUFFER_SIZE:usize = 200;
 
 pub struct Listener {
@@ -25,10 +27,10 @@ impl Listener {
 
                 let (_number_of_bytes, src_addr) = socket.recv_from(&mut buf)
                                                 .expect("Cannot receive data");
-                println!("Got a message: {}", str::from_utf8(&buf).unwrap());
+                debug!("Got a message: {}", str::from_utf8(&buf).unwrap());
                 let error_opt = socket.send_to(b"test", src_addr).err();
                 if !error_opt.is_none() {
-                    println!("Failed to send a message");
+                    error!("Failed to send a message");
                 }
                 
             }
