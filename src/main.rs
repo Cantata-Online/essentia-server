@@ -7,7 +7,6 @@ use network::server_udp::{Listener};
 
 fn main() {
     let mut server = Listener::create();
-
     server.start();
     println!("Server started.");
 
