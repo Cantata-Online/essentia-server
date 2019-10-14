@@ -6,7 +6,7 @@ use std::thread;
 use network::server_udp::{Listener};
 
 fn main() {
-    let server = Listener::create();
+    let mut server = Listener::create();
 
     server.start();
     println!("Server started.");
