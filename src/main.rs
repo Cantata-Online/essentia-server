@@ -5,7 +5,7 @@ use env_logger::Env;
 use log::{info, debug};
 use std::io;
 
-use network::server_udp::{Listener};
+use network::game::server_udp::{Listener};
 
 fn main() -> io::Result<()> {
     env_logger::from_env(Env::default().default_filter_or("info")).init();

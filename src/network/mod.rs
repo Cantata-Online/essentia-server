@@ -1,1 +1,1 @@
-pub mod server_udp;
+pub mod game;
