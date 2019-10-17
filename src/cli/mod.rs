@@ -28,7 +28,7 @@ fn main_iteration() -> bool {
 }
 
 /// Handles command line input
-pub fn cli_handler() {
+pub fn handler() {
     let mut do_exit:bool = false;
     while !do_exit {
         do_exit = main_iteration();

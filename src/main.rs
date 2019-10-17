@@ -1,13 +1,11 @@
+mod cli;
 mod network;
-mod system;
 
 use env_logger::Env;
 use log::{info, debug};
 use std::io;
 
 use network::server_udp::{Listener};
-use system::cli_handler::{cli_handler};
-
 
 fn main() -> io::Result<()> {
     env_logger::from_env(Env::default().default_filter_or("info")).init();
@@ -16,7 +14,7 @@ fn main() -> io::Result<()> {
     server.start();
     info!("Server started.");
 
-    cli_handler();
+    cli::handler();
 
     debug!("Exited from main loop");
     info!("Server terminated.");
