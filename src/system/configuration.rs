@@ -5,19 +5,19 @@ use super::super::cli::arg_parse::{Arguments};
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct GameServerConfiguration {
-    socket_type: String,
-    host: String,
-    port: i32,
+    pub socket_type: String,
+    pub host: String,
+    pub port: i32,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct ServerConfiguration {
-    game: GameServerConfiguration
+    pub game: GameServerConfiguration
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Configuration {
-    server: ServerConfiguration
+    pub server: ServerConfiguration
 }
 
 pub fn configure(cli_args: Arguments) -> Result<Configuration, String> {
@@ -30,7 +30,6 @@ pub fn configure(cli_args: Arguments) -> Result<Configuration, String> {
     let configuration_option = serde_yaml::from_str(&yaml_content);
     if configuration_option.is_err() {
         return Err(configuration_option.unwrap_err().to_string());
-        //return Err(String::from("Cannot parse the YAML configuration file."));
     }
     let configuration = configuration_option.unwrap();
     Ok(configuration)

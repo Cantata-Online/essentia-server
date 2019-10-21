@@ -1,27 +1,32 @@
 use std::net::UdpSocket;
 use std::thread;
 
-use log::{debug, error};
+use log::{debug, error, info};
 use super::packets;
+use super::super::super::system::configuration::{GameServerConfiguration};
 
 const BUFFER_SIZE:usize = 200;
 
 const SERVER_STATUS_RESPONSE_OK:&'static[u8; 1] = &[0x01];
 
 pub struct Listener {
-    socket: Option<UdpSocket>
+    socket: Option<UdpSocket>,
+    configuration: GameServerConfiguration,
 }
 
 impl Listener {
-    pub fn create() -> Listener {
+    pub fn create(configuration: GameServerConfiguration) -> Listener {
         Listener{
+            configuration: configuration,
             socket: None
         }
     }
 
     pub fn start(&mut self) {
-        let socket = UdpSocket::bind("127.0.0.1:2300").unwrap();
+        let address = format!("{}:{}", self.configuration.host, self.configuration.port);
+        let socket = UdpSocket::bind(address.clone()).unwrap();
         self.socket = Some(socket.try_clone().expect("Cannot clone a socket"));
+        info!("Server is listening on address {}", address);
 
         thread::spawn(move || {
             loop {

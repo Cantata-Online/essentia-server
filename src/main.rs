@@ -18,10 +18,8 @@ fn main() {
     }
     let config = config_option.unwrap();
 
-    let mut server = Listener::create();
+    let mut server = Listener::create(config.server.game);
     server.start();
-    info!("Server started.");
-
     cli::handler();
 
     debug!("Exited from main loop");
