@@ -1,3 +1,5 @@
+pub mod arg_parse;
+
 use std::io;
 use log::{error};
 
