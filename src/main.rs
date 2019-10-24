@@ -6,6 +6,7 @@ use env_logger::Env;
 use log::{info, debug, error};
 
 use network::game::server_udp::{Listener};
+use network::http_api::server::{start as http_server_start};
 
 fn main() {
     env_logger::from_env(Env::default().default_filter_or("info")).init();
@@ -18,8 +19,13 @@ fn main() {
     }
     let config = config_option.unwrap();
 
-    let mut server = Listener::create(config.server.game);
-    server.start();
+    let mut game_server = Listener::create(config.server.game);
+    game_server.start();
+    let http_api_result = http_server_start(config.server.http_api);
+    if http_api_result.is_err() {
+        error!("{}", http_api_result.unwrap_err());
+        return;
+    }
     cli::handler();
 
     debug!("Exited from main loop");

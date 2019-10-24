@@ -26,7 +26,7 @@ impl Listener {
         let address = format!("{}:{}", self.configuration.host, self.configuration.port);
         let socket = UdpSocket::bind(address.clone()).unwrap();
         self.socket = Some(socket.try_clone().expect("Cannot clone a socket"));
-        info!("Server is listening on address {}", address);
+        info!("Game server is listening on address {}", address);
 
         thread::spawn(move || {
             loop {

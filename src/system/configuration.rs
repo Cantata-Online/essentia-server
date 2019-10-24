@@ -1,23 +1,36 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize};
 use std::fs;
 
 use super::super::cli::arg_parse::{Arguments};
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct GameServerConfiguration {
     pub socket_type: String,
     pub host: String,
     pub port: i32,
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
-pub struct ServerConfiguration {
-    pub game: GameServerConfiguration
+#[derive(Debug, Deserialize)]
+pub struct HttpApiServerConfiguration {
+    pub host: String,
+    pub port: i32,
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
+pub struct ServerConfiguration {
+    pub game: GameServerConfiguration,
+    pub http_api: HttpApiServerConfiguration,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct AppConfiguration {
+    pub base_directory: String,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct Configuration {
-    pub server: ServerConfiguration
+    pub app: AppConfiguration,
+    pub server: ServerConfiguration,
 }
 
 pub fn configure(cli_args: Arguments) -> Result<Configuration, String> {
