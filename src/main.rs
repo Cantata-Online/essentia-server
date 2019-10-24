@@ -19,9 +19,9 @@ fn main() {
     }
     let config = config_option.unwrap();
 
-    let mut game_server = Listener::create(config.server.game);
+    let mut game_server = Listener::create(config.server.game.clone());
     game_server.start();
-    let http_api_result = http_server_start(config.server.http_api);
+    let http_api_result = http_server_start(config);
     if http_api_result.is_err() {
         error!("{}", http_api_result.unwrap_err());
         return;

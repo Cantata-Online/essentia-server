@@ -3,31 +3,31 @@ use std::fs;
 
 use super::super::cli::arg_parse::{Arguments};
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct GameServerConfiguration {
     pub socket_type: String,
     pub host: String,
     pub port: i32,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct HttpApiServerConfiguration {
     pub host: String,
     pub port: i32,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct ServerConfiguration {
     pub game: GameServerConfiguration,
     pub http_api: HttpApiServerConfiguration,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct AppConfiguration {
     pub base_directory: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Configuration {
     pub app: AppConfiguration,
     pub server: ServerConfiguration,
