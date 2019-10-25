@@ -10,15 +10,21 @@ use hyper::service::service_fn_ok;
 
 use super::super::super::system::configuration::{Configuration};
 
-fn http_handler(req: Request<Body>) -> Response<Body> {
-    if "POST" == req.method() && "/accounts" == req.uri() {
-        return Response::new(Body::from(format!("Registration")));
-    }
+struct Handler {
 
-    Response::builder()
-        .status(StatusCode::NOT_FOUND)
-        .body(Body::from(""))
-        .unwrap()
+}
+
+impl Handler {
+    fn handle(&self, req: Request<Body>) -> Response<Body> {
+        if "POST" == req.method() && "/accounts" == req.uri() {
+            return Response::new(Body::from(format!("Registration")));
+        }
+
+        Response::builder()
+            .status(StatusCode::NOT_FOUND)
+            .body(Body::from(""))
+            .unwrap()
+    }
 }
 
 pub fn start(configuration: Configuration) -> Result<(), String> {
@@ -28,9 +34,12 @@ pub fn start(configuration: Configuration) -> Result<(), String> {
         .expect(format!("Invalid socket address: {}", address_string.clone()).as_str())
         .next()
         .unwrap();
-
+    
     let new_svc = || {
-        service_fn_ok(http_handler)
+        let handler = Handler{};
+        service_fn_ok(move |req: Request<Body>| {
+            handler.handle(req)
+        })
     };
     let server = Server::bind(&sock_addr)
         .serve(new_svc)
