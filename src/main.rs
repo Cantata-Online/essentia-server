@@ -6,7 +6,7 @@ mod system;
 use env_logger::Env;
 use log::{info};
 
-use network::game::server_udp::{Listener};
+use network::game::server_udp::{start as game_server_start};
 use network::http_api::server::{start as http_server_start};
 use system::configuration::{Configuration};
 use system::error::{Error};
@@ -28,14 +28,18 @@ fn start_api_server(configuration: Configuration) -> Result<(), Error> {
     }
 }
 
+fn start_game_server(configuration: Configuration) -> Result<(), Error> {
+    let result = game_server_start(configuration);
+    match result {
+        Err(e) => Err(Error::create(e)),
+        Ok(_) => Ok(()),
+    }
+}
+
 fn main() -> Result<(), Error> {
     let config = init_config()?;
-
-    // Todo: wrap it into function which returns a result too
-    let mut game_server = Listener::create(config.server.game.clone());
-    game_server.start();
-
-    start_api_server(config)?;
+    start_game_server(config.clone())?;
+    start_api_server(config.clone())?;
     cli::handler();
 
     info!("Server terminated.");
