@@ -34,16 +34,14 @@ pub struct Configuration {
 }
 
 pub fn configure(cli_args: Arguments) -> Result<Configuration, String> {
-    let yaml_content_option = fs::read_to_string(cli_args.config_file);
-    if yaml_content_option.is_err() {
-        return Err(String::from("Cannot open configuration file."));
-    }
-    let yaml_content = yaml_content_option.unwrap();
-
-    let configuration_option = serde_yaml::from_str(&yaml_content);
-    if configuration_option.is_err() {
-        return Err(configuration_option.unwrap_err().to_string());
-    }
-    let configuration = configuration_option.unwrap();
-    Ok(configuration)
+    let config_file = cli_args.config_file.clone();
+    let yaml = match fs::read_to_string(config_file.clone()) {
+        Err(e) => Err(format!("Cannot open configuration file ({}): {}", config_file, e.to_string())),
+        Ok(y) => Ok(y),
+    }?;
+    let config = match serde_yaml::from_str(&yaml) {
+        Err(e) => Err(format!("Cannot load configuration from YAML file: {}", e.to_string())),
+        Ok(config) => Ok(config)
+    }?;
+    Ok(config)
 }
