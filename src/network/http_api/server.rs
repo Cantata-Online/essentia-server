@@ -9,6 +9,7 @@ use hyper::rt::Future;
 use hyper::service::service_fn_ok;
 
 use super::super::super::system::configuration::{Configuration};
+use super::super::super::system::error::{Error};
 
 struct Handler {
 
@@ -27,7 +28,7 @@ impl Handler {
     }
 }
 
-pub fn start(configuration: Configuration) -> Result<(), String> {
+pub fn start(configuration: Configuration) -> Result<(), Error> {
     let http_api_config = configuration.server.http_api;
     let address_string = format!("{}:{}", http_api_config.host, http_api_config.port);
     let sock_addr = address_string.to_socket_addrs()

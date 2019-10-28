@@ -8,7 +8,7 @@ use log::{info};
 
 use engine::engine::{Engine};
 use network::game::server_udp::{start as game_server_start};
-use network::http_api::server::{start as http_server_start};
+use network::http_api::server::{start as http_api_server_start};
 use system::configuration::{Configuration};
 use system::error::{Error};
 
@@ -30,27 +30,11 @@ fn start_engine(configuration: Configuration) -> Result<Engine, Error> {
     Ok(engine)
 }
 
-fn start_api_server(configuration: Configuration) -> Result<(), Error> {
-    let http_api_result = http_server_start(configuration);
-    match http_api_result {
-        Err(e) => Err(Error::create(e)),
-        Ok(_) => Ok(()),
-    }
-}
-
-fn start_game_server(configuration: Configuration) -> Result<(), Error> {
-    let result = game_server_start(configuration);
-    match result {
-        Err(e) => Err(Error::create(e)),
-        Ok(_) => Ok(()),
-    }
-}
-
 fn main() -> Result<(), Error> {
     let config = init_config()?;
     let engine = start_engine(config.clone())?;
-    start_game_server(config.clone())?;
-    start_api_server(config.clone())?;
+    game_server_start(config.clone())?;
+    http_api_server_start(config.clone())?;
     cli::handler();
 
     info!("Server terminated.");
