@@ -29,4 +29,9 @@ impl Engine {
             }
         });
     }
+
+    pub fn account_create(&self) {
+        // TODO: implement account creation. Maybe need to make submodules(account management, player actions, stats, etc)
+        info!("TEST: {}", self.configuration.as_ref().unwrap().server.game.socket_type.clone());
+    }
 }

@@ -11,18 +11,20 @@ use hyper::service::service_fn_ok;
 use super::super::super::engine::engine::{Engine};
 use super::super::super::system::error::{Error};
 
-struct Handler {
-    
+struct Handler<'a> {
+    engine: &'a Engine
 }
 
-impl Handler {
-    fn create() -> Handler {
+impl Handler<'_> {
+    fn create(engine: &Engine) -> Handler {
         Handler{
+            engine: engine
         }
     }
 
     fn handle(&self, req: Request<Body>) -> Response<Body> {
         if "POST" == req.method() && "/accounts" == req.uri() {
+            self.engine.account_create();
             return Response::new(Body::from(format!("Registration")));
         }
 
@@ -33,7 +35,7 @@ impl Handler {
     }
 }
 
-pub fn start(engine: &Engine) -> Result<(), Error> {
+pub fn start(engine: &'static Engine) -> Result<(), Error> {
     let http_api_config = &engine.configuration.as_ref().unwrap().server.http_api;
     let address_string = format!("{}:{}", http_api_config.host, http_api_config.port);
     let mut sock_addr = match address_string.to_socket_addrs() {
@@ -45,8 +47,8 @@ pub fn start(engine: &Engine) -> Result<(), Error> {
     thread::spawn(move || {
         info!("Starting HTTP API server on address {}...", address_string);
         let server = Server::bind(&sock_addr)
-            .serve(|| {
-                let handler = Handler::create();
+            .serve(move || {
+                let handler = Handler::create(engine);
                 service_fn_ok(move |req: Request<Body>| {
                     handler.handle(req)
                 })

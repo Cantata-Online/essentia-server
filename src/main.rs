@@ -36,7 +36,6 @@ fn start_engine(configuration: Configuration) -> Result<(), Error> {
 
 fn main() -> Result<(), Error> {
     let config = init_config()?;
-    //let engine2 = Box::from(start_engine(config.clone())?);
     unsafe {
         start_engine(config)?;
         let engine2 = Box::from(&ENGINE);
