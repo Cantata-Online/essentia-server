@@ -6,7 +6,7 @@ use log::{info};
 use super::super::system::configuration::{Configuration};
 
 pub struct Engine {
-    configuration: Configuration
+    pub configuration: Configuration
 }
 
 impl Engine {

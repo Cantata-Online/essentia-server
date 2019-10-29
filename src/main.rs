@@ -32,9 +32,9 @@ fn start_engine(configuration: Configuration) -> Result<Engine, Error> {
 
 fn main() -> Result<(), Error> {
     let config = init_config()?;
-    let engine = start_engine(config.clone())?;
-    game_server_start(config.clone())?;
-    http_api_server_start(config.clone())?;
+    let engine = Box::from(start_engine(config.clone())?);
+    game_server_start(engine.as_ref())?;
+    http_api_server_start(engine.as_ref())?;
     cli::handler();
 
     info!("Server terminated.");
