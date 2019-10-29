@@ -36,24 +36,23 @@ impl Handler {
 pub fn start(engine: &Engine) -> Result<(), Error> {
     let http_api_config = &engine.configuration.server.http_api;
     let address_string = format!("{}:{}", http_api_config.host, http_api_config.port);
-    let sock_addr = address_string.to_socket_addrs()
-        .expect(format!("Invalid socket address: {}", address_string.clone()).as_str())
-        .next()
-        .unwrap();
-    
-    let new_svc = || {
-        let handler = Handler::create();
-        service_fn_ok(move |req: Request<Body>| {
-            handler.handle(req)
-        })
-    };
-    let server = Server::bind(&sock_addr)
-        .serve(new_svc)
-        .map_err(|e| error!("server error: {}", e));
+    let mut sock_addr = match address_string.to_socket_addrs() {
+        Err(_) => Err(Error::create(format!("Invalid socket address: {}", address_string.clone()))),
+        Ok(a) => Ok(a)
+    }?;
+    let sock_addr = sock_addr.next().unwrap();
 
-    info!("Starting HTTP API server on address {}...", address_string);
     thread::spawn(move || {
-        hyper::rt::run(server);
+        info!("Starting HTTP API server on address {}...", address_string);
+        let server = Server::bind(&sock_addr)
+            .serve(|| {
+                let handler = Handler::create();
+                service_fn_ok(move |req: Request<Body>| {
+                    handler.handle(req)
+                })
+            })
+            .map_err(|e| error!("server error: {}", e));
+        hyper::rt::run(server); 
     });
     Ok(())
 }
