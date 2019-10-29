@@ -11,7 +11,7 @@ const BUFFER_SIZE:usize = 200;
 const SERVER_STATUS_RESPONSE_OK:&'static[u8; 1] = &[0x01];
 
 pub fn start(engine: &Engine) -> Result<(), Error> {
-    let game_configuration = &engine.configuration.server.game;
+    let game_configuration = &engine.configuration.as_ref().unwrap().server.game;
     let address = format!("{}:{}", game_configuration.host, game_configuration.port);
     let socket = UdpSocket::bind(address.clone()).unwrap();
     info!("Game server is listening on address {}", address);

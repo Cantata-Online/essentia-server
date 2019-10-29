@@ -12,6 +12,8 @@ use network::http_api::server::{start as http_api_server_start};
 use system::configuration::{Configuration};
 use system::error::{Error};
 
+static mut ENGINE: Engine = Engine::create_empty();
+
 fn init_config() -> Result<Configuration, Error> {
     env_logger::from_env(Env::default().default_filter_or("info"))
         .format_module_path(false)
@@ -23,18 +25,25 @@ fn init_config() -> Result<Configuration, Error> {
     }
 }
 
-fn start_engine(configuration: Configuration) -> Result<Engine, Error> {
-    let engine = Engine::create(configuration);
-    engine.init();
-    engine.run();
-    Ok(engine)
+fn start_engine(configuration: Configuration) -> Result<(), Error> {
+    // let engine = Engine::create(configuration);
+    unsafe {
+        ENGINE.init(configuration);
+        ENGINE.run();
+    }
+    Ok(())
 }
 
 fn main() -> Result<(), Error> {
     let config = init_config()?;
-    let engine = Box::from(start_engine(config.clone())?);
-    game_server_start(engine.as_ref())?;
-    http_api_server_start(engine.as_ref())?;
+    //let engine2 = Box::from(start_engine(config.clone())?);
+    unsafe {
+        start_engine(config)?;
+        let engine2 = Box::from(&ENGINE);
+        game_server_start(engine2.as_ref())?;
+        http_api_server_start(engine2.as_ref())?;
+    }
+
     cli::handler();
 
     info!("Server terminated.");

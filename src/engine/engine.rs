@@ -6,17 +6,18 @@ use log::{info};
 use super::super::system::configuration::{Configuration};
 
 pub struct Engine {
-    pub configuration: Configuration
+    pub configuration: Option<Configuration>
 }
 
 impl Engine {
-    pub fn create(configuration: Configuration) -> Engine {
-        Engine{
-            configuration: configuration
+    pub const fn create_empty() -> Engine {
+        Engine {
+            configuration: None
         }
     }
 
-    pub fn init(&self) {
+    pub fn init(&mut self, configuration: Configuration) {
+        self.configuration = Some(configuration);
         info!("An engine is initialized.");
     }
 

@@ -34,7 +34,7 @@ impl Handler {
 }
 
 pub fn start(engine: &Engine) -> Result<(), Error> {
-    let http_api_config = &engine.configuration.server.http_api;
+    let http_api_config = &engine.configuration.as_ref().unwrap().server.http_api;
     let address_string = format!("{}:{}", http_api_config.host, http_api_config.port);
     let mut sock_addr = match address_string.to_socket_addrs() {
         Err(_) => Err(Error::create(format!("Invalid socket address: {}", address_string.clone()))),
