@@ -26,7 +26,7 @@ fn init_config() -> Result<Configuration, Error> {
 
 fn start_engine(engine_arc: Arc<Mutex<Engine>>) -> Result<(), Error> {
     let mut engine = engine_arc.lock().unwrap();
-    engine.init();
+    engine.init()?;
     engine.run();
     Ok(())
 }
