@@ -1,6 +1,7 @@
 mod cli;
 mod engine;
 mod network;
+use std::sync::{Arc, Mutex};
 mod system;
 
 use env_logger::Env;
@@ -11,8 +12,6 @@ use network::game::server_udp::{start as game_server_start};
 use network::http_api::server::{start as http_api_server_start};
 use system::configuration::{Configuration};
 use system::error::{Error};
-
-static mut ENGINE: Engine = Engine::create_empty();
 
 fn init_config() -> Result<Configuration, Error> {
     env_logger::from_env(Env::default().default_filter_or("info"))
@@ -25,23 +24,19 @@ fn init_config() -> Result<Configuration, Error> {
     }
 }
 
-fn start_engine(configuration: Configuration) -> Result<(), Error> {
-    // let engine = Engine::create(configuration);
-    unsafe {
-        ENGINE.init(configuration);
-        ENGINE.run();
-    }
+fn start_engine(engine_arc: Arc<Mutex<Engine>>) -> Result<(), Error> {
+    let mut engine = engine_arc.lock().unwrap();
+    engine.init();
+    engine.run();
     Ok(())
 }
 
 fn main() -> Result<(), Error> {
     let config = init_config()?;
-    unsafe {
-        start_engine(config)?;
-        let engine2 = Box::from(&ENGINE);
-        game_server_start(engine2.as_ref())?;
-        http_api_server_start(engine2.as_ref())?;
-    }
+    let engine_arc = Arc::new(Mutex::new(Engine::create(config)));
+    start_engine(engine_arc.clone())?;
+    game_server_start(engine_arc.clone())?;
+    http_api_server_start(engine_arc.clone())?;
 
     cli::handler();
 

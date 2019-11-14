@@ -1,5 +1,6 @@
 use std::net::UdpSocket;
 use std::thread;
+use std::sync::{Arc, Mutex};
 
 use log::{debug, error, info};
 use super::packets;
@@ -10,8 +11,9 @@ const BUFFER_SIZE:usize = 200;
 
 const SERVER_STATUS_RESPONSE_OK:&'static[u8; 1] = &[0x01];
 
-pub fn start(engine: &Engine) -> Result<(), Error> {
-    let game_configuration = &engine.configuration.as_ref().unwrap().server.game;
+pub fn start(engine_arc: Arc<Mutex<Engine>>) -> Result<(), Error> {
+    let engine = engine_arc.lock().unwrap();
+    let game_configuration = &engine.configuration.server.game;
     let address = format!("{}:{}", game_configuration.host, game_configuration.port);
     let socket = UdpSocket::bind(address.clone()).unwrap();
     info!("Game server is listening on address {}", address);

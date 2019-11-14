@@ -6,18 +6,17 @@ use log::{info};
 use super::super::system::configuration::{Configuration};
 
 pub struct Engine {
-    pub configuration: Option<Configuration>
+    pub configuration: Configuration
 }
 
 impl Engine {
-    pub const fn create_empty() -> Engine {
+    pub const fn create(configuration: Configuration) -> Engine {
         Engine {
-            configuration: None
+            configuration: configuration
         }
     }
 
-    pub fn init(&mut self, configuration: Configuration) {
-        self.configuration = Some(configuration);
+    pub fn init(&mut self) {
         info!("An engine is initialized.");
     }
 
@@ -32,6 +31,6 @@ impl Engine {
 
     pub fn account_create(&self) {
         // TODO: implement account creation. Maybe need to make submodules(account management, player actions, stats, etc)
-        info!("TEST: {}", self.configuration.as_ref().unwrap().server.game.socket_type.clone());
+        info!("TEST: {}", self.configuration.server.game.socket_type.clone());
     }
 }
