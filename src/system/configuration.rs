@@ -28,9 +28,20 @@ pub struct AppConfiguration {
 }
 
 #[derive(Debug, Deserialize, Clone)]
+pub struct EngineDatasourceConfiguration {
+    pub uri: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct EngineConfiguration {
+    pub datasource: EngineDatasourceConfiguration,
+}
+
+#[derive(Debug, Deserialize, Clone)]
 pub struct Configuration {
     pub app: AppConfiguration,
     pub server: ServerConfiguration,
+    pub engine: EngineConfiguration,
 }
 
 pub fn configure(cli_args: Arguments) -> Result<Configuration, String> {

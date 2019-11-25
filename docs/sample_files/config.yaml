@@ -1,0 +1,15 @@
+server:
+  game:
+    socket_type: udp
+    host: 127.0.0.1
+    port: 2300
+  http_api:
+    host: 127.0.0.1
+    port: 3000
+engine:
+  datasource:
+    uri: mongodb://localhost:27017
+secrets:
+  account_credentials: abc
+app:
+  base_directory: .var/game_files
