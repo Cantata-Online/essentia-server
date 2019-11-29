@@ -3,7 +3,7 @@ use std::fmt;
 use log::{error};
 
 pub struct Error {
-    message: String
+    pub message: String
 }
 
 impl Error {

@@ -2,10 +2,13 @@ use std::thread;
 use std::time::{Duration};
 
 use mongodb::{Client, ThreadedClient};
+use mongodb::{bson, doc};
+use mongodb::db::ThreadedDatabase;
 use log::{info};
 
 use super::super::system::configuration::{Configuration};
 use super::super::system::error::{Error};
+use super::models::account::{Account};
 
 const URI_MONGODB: &str = "mongodb://";
 
@@ -62,8 +65,24 @@ impl Engine {
         });
     }
 
-    pub fn account_create(&self) {
-        // TODO: implement account creation. Maybe need to make submodules(account management, player actions, stats, etc)
-        info!("TEST: {}", self.configuration.server.game.socket_type.clone());
+    pub fn account_create(&self, account: Account) -> Result<(), Error> {
+        let datasource = self.datasource.as_ref().unwrap();
+        let database = datasource.db("main");
+        let accounts = database.collection("accounts");
+
+
+        // accounts.find("asd", "asdsda");
+        // accounts.insert_one(doc!{ "title": "Back to the Future" }, None).unwrap();
+        accounts.insert_one(account.to_bson(), None).unwrap();
+        let existing_account_option = match accounts.find_one(Some(doc! {
+            "login": account.login.clone()
+        }), None) {
+            Ok(r) => Ok(r),
+            Err(_) => Err(Error::create(format!("An internal error occurred"))),
+        }?;
+        if !existing_account_option.is_none() {
+            return Err(Error::create(format!("An account with provided login already exists")));
+        }
+        Ok(())
     }
 }

@@ -1,20 +1,21 @@
-extern crate hyper;
-
-use std::net::{ToSocketAddrs};
+extern crate rustc_serialize;
 use std::thread;
 use std::sync::{Arc, Mutex};
-use log::{error, info};
+use rouille::Request;
+use rouille::Response;
+use rouille::Server;
+use rouille::{try_or_400};
 
-use hyper::{Body, Request, Response, Server, StatusCode};
-use hyper::rt::Future;
-use hyper::service::service_fn_ok;
+use log::{info};
 
 use super::super::super::engine::engine::{Engine};
 use super::super::super::system::error::{Error};
+use super::request::account::{AccountCreateRequest};
 
 struct Handler {
     engine_arc: Arc<Mutex<Engine>>
 }
+
 
 impl Handler {
     fn create(engine_arc: Arc<Mutex<Engine>>) -> Handler {
@@ -23,17 +24,18 @@ impl Handler {
         }
     }
 
-    fn handle(&self, req: Request<Body>) -> Response<Body> {
-        if "POST" == req.method() && "/accounts" == req.uri() {
-            let engine = self.engine_arc.lock().unwrap();
-            engine.account_create();
-            return Response::new(Body::from(format!("Registration")));
+    fn handle(&self, req: &Request) -> Response {
+        let engine = self.engine_arc.lock().unwrap();
+        if "POST" == req.method() && "/accounts" == req.url() {
+            let request_struct: AccountCreateRequest = try_or_400!(rouille::input::json_input(req));
+            let account = request_struct.to_engine_struct();
+            let response = match engine.account_create(account) {
+                Ok(_) => Response::text(format!("Login is {}", request_struct.login)),
+                Err(e) => Response::text(format!("An error occurred: {}", e.message)),
+            };
+            return response;
         }
-
-        Response::builder()
-            .status(StatusCode::NOT_FOUND)
-            .body(Body::from(""))
-            .unwrap()
+        Response::empty_404()
     }
 }
 
@@ -41,25 +43,16 @@ pub fn start(engine_arc: Arc<Mutex<Engine>>) -> Result<(), Error> {
     let engine = engine_arc.lock().unwrap();
     let http_api_config = &engine.configuration.server.http_api;
     let address_string = format!("{}:{}", http_api_config.host, http_api_config.port);
-    let mut sock_addr = match address_string.to_socket_addrs() {
-        Err(_) => Err(Error::create(format!("Invalid socket address: {}", address_string.clone()))),
-        Ok(a) => Ok(a)
-    }?;
-    let sock_addr = sock_addr.next().unwrap();
 
     let engine_server_thread_arc = engine_arc.clone();
     thread::spawn(move || {
-        info!("Starting HTTP API server on address {}...", address_string);
         let engine_http_handler_arc = engine_server_thread_arc.clone();
-        let server = Server::bind(&sock_addr)
-            .serve(move || {
-                let handler = Handler::create(engine_http_handler_arc.clone());
-                service_fn_ok(move |req: Request<Body>| {
-                    handler.handle(req)
-                })
-            })
-            .map_err(|e| error!("server error: {}", e));
-        hyper::rt::run(server); 
+        let server = Server::new(address_string.clone(), move |request| {
+            let handler = Handler::create(engine_http_handler_arc.clone());
+            handler.handle(&request)
+        });
+        info!("Starting HTTP API server on address {}...", address_string);
+        server.unwrap().run();
     });
     Ok(())
 }
