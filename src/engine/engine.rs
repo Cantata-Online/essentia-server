@@ -1,20 +1,19 @@
 use std::thread;
 use std::time::{Duration};
 
-use mongodb::{Client, ThreadedClient};
-use mongodb::{bson, doc};
-use mongodb::db::ThreadedDatabase;
 use log::{info};
 
 use super::super::system::configuration::{Configuration};
 use super::super::system::error::{Error};
-use super::models::account::{Account};
+use super::super::data::models::account::{Account};
+use super::super::data::datasource::{Datasource};
+use super::super::data::mongo::{Mongo, MongoConfig};
 
 const URI_MONGODB: &str = "mongodb://";
 
 pub struct Engine {
     pub configuration: Configuration,
-    datasource: Option<Client>,
+    pub datasource: Option<Mongo>,
 }
 
 impl Engine {
@@ -39,13 +38,16 @@ impl Engine {
             Ok(x) => Ok(x),
             Err(_) => Err(Error::create(format!("Invalid port: {}", host_port[1])))
         }?;
-        let datasource = match Client::connect(host, port) {
-            Ok(d) => {
-                info!("Connected to database");
-                Ok(d)
-            },
-            Err(_) => Err(Error::create(format!("Cannot connect to database")))
+
+        let mongo_config = MongoConfig {
+            host: String::from(host),
+            port: port
+        };
+        let datasource = match Mongo::create(mongo_config) {
+            Ok(d) => Ok(d),
+            Err(e) => Err(e),
         }?;
+
         self.datasource = Some(datasource);
         Ok(())
     }
@@ -66,22 +68,6 @@ impl Engine {
     }
 
     pub fn account_create(&self, account: Account) -> Result<(), Error> {
-        let datasource = self.datasource.as_ref().unwrap();
-        let database = datasource.db("main");
-        let accounts = database.collection("accounts");
-        let existing_account_option = match accounts.find_one(Some(doc! {
-            "login": account.login.clone()
-        }), None) {
-            Ok(r) => Ok(r),
-            Err(_) => Err(Error::create(format!("An internal error occurred"))),
-        }?;
-        if !existing_account_option.is_none() {
-            return Err(Error::create(format!("An account with provided login already exists")));
-        }
-        match accounts.insert_one(account.to_bson(), None) {
-            Ok(_) => Ok(()),
-            Err(_) => Err(Error::create(format!("Failed to create an account")))
-        }?;
-        Ok(())
+        self.datasource.as_ref().unwrap().account_create(account)
     }
 }
