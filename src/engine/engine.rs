@@ -69,11 +69,6 @@ impl Engine {
         let datasource = self.datasource.as_ref().unwrap();
         let database = datasource.db("main");
         let accounts = database.collection("accounts");
-
-
-        // accounts.find("asd", "asdsda");
-        // accounts.insert_one(doc!{ "title": "Back to the Future" }, None).unwrap();
-        accounts.insert_one(account.to_bson(), None).unwrap();
         let existing_account_option = match accounts.find_one(Some(doc! {
             "login": account.login.clone()
         }), None) {
@@ -83,6 +78,10 @@ impl Engine {
         if !existing_account_option.is_none() {
             return Err(Error::create(format!("An account with provided login already exists")));
         }
+        match accounts.insert_one(account.to_bson(), None) {
+            Ok(_) => Ok(()),
+            Err(_) => Err(Error::create(format!("Failed to create an account")))
+        }?;
         Ok(())
     }
 }
