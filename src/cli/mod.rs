@@ -22,7 +22,9 @@ fn main_iteration() -> bool {
     match io::stdin().read_line(&mut input) {
         Ok(_n) => {
             let input = input.trim();
-            result = command_handler(input)
+            if input.len() > 0 {
+                result = command_handler(input);
+            }
         }
         Err(error) => error!("{}", error),
     }
