@@ -4,6 +4,7 @@ use std::sync::{Arc, Mutex};
 use log::{debug, error};
 
 use super::connector::Connector;
+use super::packet_codes;
 use super::packets;
 use super::super::super::engine::engine::{Engine};
 use super::super::super::system::error::{Error};
@@ -15,21 +16,26 @@ const SERVER_STATUS_RESPONSE_OK:&'static[u8; 1] = &[0x01];
 fn thread_fn(connector: Connector) {
     loop {
         let mut buf = [0; BUFFER_SIZE];
-        // let (number_of_bytes, src_addr) = socket.recv_from(&mut buf).unwrap();
         let (number_of_bytes, src_addr) = connector.read_udp(&mut buf).unwrap();
 
         if number_of_bytes < 2 {
             continue;
         }
 
-        let packet_code:u16 = ((buf[1] as u16) * 256 + (buf[0] as u16)).into();
+        let packet_code = ((buf[1] as u16) << 8) + buf[0] as u16;
         debug!("Got {} bytes: {:#X}\n", number_of_bytes, packet_code);
         match packet_code {
-            packets::PACKET_CODE_STATUS => {
+            packet_codes::PACKET_CODE_STATUS => {
                 if connector.send(src_addr, SERVER_STATUS_RESPONSE_OK).is_err() {
                     error!("Cannot send a packet");
                 }
             },
+            packet_codes::PACKET_CODE_LOGIN => {
+                debug!("Login package received");
+                let data = &buf[0..64];
+                let packet = packets::PacketLogin::create_from_bytes(&data);
+                debug!("Login: {}; Password: {}", packet.login, packet.password);
+            }
             _ => { debug!("Default handler"); },
         }
     }

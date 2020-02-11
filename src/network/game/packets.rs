@@ -1,5 +1,18 @@
-pub const PACKET_CODE_STATUS:u16 =  0x0000;
-// pub const PACKET_LOGIN:u16 =               0x0010;
-// pub const SELECT_CHARACTER:u16 =    0x0015;
-// pub const LOGOUT:u16 =              0x0020;
-// pub const MOVE:u16 =                0x0100;
+use super::packet_codes;
+
+pub struct PacketLogin {
+    pub header: u16,
+    pub login: String,
+    pub password: String,
+}
+
+impl PacketLogin {
+    pub fn create_from_bytes(bytes: &[u8]) -> PacketLogin {
+        let packet = PacketLogin {
+            header: packet_codes::PACKET_CODE_LOGIN,
+            login: String::from_utf8(bytes[2..32].to_vec()).unwrap_or("TEST1".to_string()),
+            password: String::from_utf8(bytes[33..63].to_vec()).unwrap_or("TEST2".to_string()),
+        };
+        packet
+    }
+}
