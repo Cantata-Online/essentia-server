@@ -31,10 +31,21 @@ fn thread_fn(connector: Connector) {
                 }
             },
             packet_codes::PACKET_CODE_LOGIN => {
-                debug!("Login package received");
+                debug!("Login packet received");
                 let data = &buf[0..64];
                 let packet = packets::PacketLogin::create_from_bytes(&data);
-                debug!("Login: {}; Password: {}", packet.login, packet.password);
+                let account = packet.to_model();
+                let mut is_succeeded = false;
+                {
+                    let engine = connector.engine_arc.lock().unwrap();
+                    is_succeeded = engine.account_login(account);
+                }
+                let mut response = packets::PacketLoginResponse::create();
+                response.status = is_succeeded;
+                match connector.send(src_addr, &response.to_vector()) {
+                    Err(_) => { error!("Failed to send a login response packet"); },
+                    _ => {},
+                };
             }
             _ => { debug!("Default handler"); },
         }

@@ -59,4 +59,17 @@ impl Datasource for Mongo {
             Err(_) => Err(Error::create(format!("Failed to create an account")))
         }
     }
+
+    fn account_auth(&self, account: Account) -> bool {
+        let accounts = self.get_table("accounts");
+        let account_mongo = match accounts.find_one(Some(doc! {
+            "login": account.login.clone(),
+            "password": account.password.clone(),
+        }), None) {
+            Ok(r) => r,
+            Err(_) => { return false; },
+        };
+
+        !account_mongo.is_none()
+    }
 }

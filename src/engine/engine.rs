@@ -24,6 +24,10 @@ impl Engine {
         }
     }
 
+    fn get_datasource(&self) -> &Mongo {
+        self.datasource.as_ref().unwrap()
+    }
+
     fn init_datasource(&mut self) -> Result<(), Error> {
         if self.configuration.engine.datasource.uri[..URI_MONGODB.len()] != *URI_MONGODB {
             return Err(Error::create(format!("Unknown datasource. Only mongodb:// is a valid datasource")))
@@ -69,5 +73,9 @@ impl Engine {
 
     pub fn account_create(&self, account: Account) -> Result<(), Error> {
         self.datasource.as_ref().unwrap().account_create(account)
+    }
+
+    pub fn account_login(&self, account: Account) -> bool {
+        self.get_datasource().account_auth(account)
     }
 }

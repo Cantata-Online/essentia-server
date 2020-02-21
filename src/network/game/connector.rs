@@ -7,7 +7,7 @@ use log::{info};
 use super::super::super::engine::engine::{Engine};
 
 pub struct Connector {
-    engine_arc: Arc<Mutex<Engine>>,
+    pub engine_arc: Arc<Mutex<Engine>>,
     socket: UdpSocket,
 }
 
