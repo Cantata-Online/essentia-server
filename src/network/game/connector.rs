@@ -6,6 +6,7 @@ use log::{info};
 
 use super::super::super::engine::engine::{Engine};
 
+// This struct performs UDP I/O operations, encrypts/decrypts packets, etc
 pub struct Connector {
     pub engine_arc: Arc<Mutex<Engine>>,
     socket: UdpSocket,
