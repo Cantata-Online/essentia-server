@@ -13,20 +13,17 @@ const URI_MONGODB: &str = "mongodb://";
 
 pub struct Engine {
     pub configuration: Configuration,
-    pub datasource: Option<Mongo>,
+    pub datasource: Option<Box<dyn Datasource>>,
 }
 
 impl Engine {
-    pub const fn create(configuration: Configuration) -> Engine {
+    pub fn create(configuration: Configuration) -> Engine {
         Engine {
             configuration: configuration,
             datasource: None,
         }
     }
 
-    fn get_datasource(&self) -> &Mongo {
-        self.datasource.as_ref().unwrap()
-    }
 
     fn init_datasource(&mut self) -> Result<(), Error> {
         if self.configuration.engine.datasource.uri[..URI_MONGODB.len()] != *URI_MONGODB {
@@ -52,7 +49,7 @@ impl Engine {
             Err(e) => Err(e),
         }?;
 
-        self.datasource = Some(datasource);
+        self.datasource = Some(Box::from(datasource));
         Ok(())
     }
 
@@ -76,6 +73,6 @@ impl Engine {
     }
 
     pub fn account_login(&self, account: Account) -> bool {
-        self.get_datasource().account_auth(account)
+        self.datasource.as_ref().unwrap().account_auth(account)
     }
 }

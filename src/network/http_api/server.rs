@@ -40,9 +40,11 @@ impl Handler {
 }
 
 pub fn start(engine_arc: Arc<Mutex<Engine>>) -> Result<(), Error> {
-    let engine = engine_arc.lock().unwrap();
-    let http_api_config = &engine.configuration.server.http_api;
-    let address_string = format!("{}:{}", http_api_config.host, http_api_config.port);
+    let address_string = {
+        let engine = engine_arc.lock().unwrap();
+        let http_api_config = &engine.configuration.server.http_api;
+        format!("{}:{}", http_api_config.host, http_api_config.port)
+    };
 
     let engine_server_thread_arc = engine_arc.clone();
     thread::spawn(move || {

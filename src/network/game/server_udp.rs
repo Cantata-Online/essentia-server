@@ -53,10 +53,11 @@ fn thread_fn(connector: Connector) {
 }
 
 pub fn start(engine_arc: Arc<Mutex<Engine>>) -> Result<(), Error> {
-    let engine = engine_arc.lock().unwrap();
-    let game_configuration = &engine.configuration.server.game;
-    let connector = Connector::create(engine_arc.clone(), game_configuration.host.clone(), game_configuration.port);
-
+    let connector = {
+        let engine = engine_arc.lock().unwrap();
+        let game_configuration = &engine.configuration.server.game;
+        Connector::create(engine_arc.clone(), game_configuration.host.clone(), game_configuration.port)
+    };
     thread::spawn(move || thread_fn(connector));
     Ok(())
 }
